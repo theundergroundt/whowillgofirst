@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <style>
     body { font-family: sans-serif; width: 300px; padding: 10px; }
-    #app-container { display: flex; flex-direction: column; gap: 20px; }
+    #app-container { display: flex; flex-direction: column; gap: 15px; }
     
     /* Calendar Styles */
     .calendar-container h4 { text-align: center; margin: 0 0 10px 0; }
@@ -32,11 +32,22 @@
     .holiday { background-color: #ffe0e0; }
     .today { background-color: #d0eaff; }
 
+    /* Separator Style */
+    hr { border: 0; border-top: 1px solid #ccc; margin: 0; }
+
     /* Rank Checker Styles */
     .rank-checker-container h4 { text-align: center; margin: 0 0 10px 0; }
     #classList { display: flex; justify-content: space-around; list-style: none; padding: 0; }
-    #classList li { background-color: #f0f0f0; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
-    #classList li:hover { background-color: #e0e0e0; }
+    #classList li {
+      background-color: #e8f5e9; /* Green background */
+      padding: 8px 12px; 
+      border-radius: 5px; 
+      cursor: pointer; 
+      transition: background-color 0.2s;
+    }
+    #classList li:hover { 
+      background-color: #c8e6c9; /* Darker green on hover */
+    }
     #rankResult { text-align:center; margin-top: 15px; font-size: 1.2em; font-weight: bold; min-height: 20px;}
 
   </style>
@@ -52,6 +63,8 @@
       </div>
       <div class="calendar-grid" id="calendar"></div>
     </div>
+
+    <hr>
 
     <div class="rank-checker-container">
       <h4>🔍 오늘 순위 보기</h4>

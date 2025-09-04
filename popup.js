@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   // --- DOM Elements ---
   const monthYearElement = document.getElementById('monthYear');
   const calendarElement = document.getElementById('calendar');
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
   let displayDate = new Date();
   const holidaysCache = {};
   const baseDate = new Date('2025-09-04T00:00:00');
-  const baseOrder = ['4반', '1반', '2반', '3반'];
+  const baseOrder = ['2반', '3반', '4반', '1반'];
 
   // --- Helper Functions ---
   function toYYYYMMDD(date) {
@@ -52,8 +52,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentDate = new Date(start);
     const holidays = await fetchHolidays(end.getFullYear());
     if (start.getFullYear() !== end.getFullYear()) {
-        const prevYearHolidays = await fetchHolidays(start.getFullYear());
-        holidays.push(...prevYearHolidays);
+      const prevYearHolidays = await fetchHolidays(start.getFullYear());
+      holidays.push(...prevYearHolidays);
     }
 
     while (currentDate <= end) {
@@ -70,10 +70,10 @@ document.addEventListener('DOMContentLoaded', function() {
   async function getOrderForDate(date) {
     const workingDaysPassed = await calculateWorkingDays(baseDate, date);
     const rotation = (workingDaysPassed > 0 ? workingDaysPassed - 1 : 0) % baseOrder.length;
-    
+
     let newOrder = [...baseOrder];
     for (let i = 0; i < rotation; i++) {
-        newOrder.unshift(newOrder.pop());
+      newOrder.unshift(newOrder.pop());
     }
     return newOrder;
   }
@@ -131,8 +131,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const today = new Date();
     const todaysOrder = await getOrderForDate(today);
     const rank = todaysOrder.indexOf(selectedClass) + 1;
+
     if (rank && todaysOrder.length > 0) {
-      rankResultElement.textContent = `${selectedClass}은 오늘 ${rank}번째 입니다.`;
+      let emoji = '';
+      // 등수에 따라 다른 이모티콘을 설정합니다. 원하는 이모티콘으로 변경하세요.
+      switch (rank) {
+        case 1:
+          emoji = '😋'; // 1등 이모티콘
+          break;
+        case 2:
+          emoji = '😚'; // 2등 이모티콘
+          break;
+        case 3:
+          emoji = '😭'; // 3등 이모티콘
+          break;
+        case 4:
+          emoji = '😵'; // 4등 이모티콘
+          break;
+      }
+      rankResultElement.textContent = `${emoji} ${selectedClass}은 오늘 ${rank}번째 입니다.`;
     } else {
       rankResultElement.textContent = '오늘은 점심 순서가 없습니다.';
     }
@@ -150,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   classListElements.forEach(elem => {
-    elem.addEventListener('click', function() {
+    elem.addEventListener('click', function () {
       const selectedClass = this.getAttribute('data-class');
       updateRankDisplay(selectedClass);
     });
