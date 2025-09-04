@@ -1,35 +1,162 @@
 document.addEventListener('DOMContentLoaded', function() {
-  // 기준 날짜와 그날의 순서 (1등부터 4등 순)
-  const baseDate = new Date('2025-09-04');
+  // --- DOM Elements ---
+  const monthYearElement = document.getElementById('monthYear');
+  const calendarElement = document.getElementById('calendar');
+  const prevMonthButton = document.getElementById('prevMonth');
+  const nextMonthButton = document.getElementById('nextMonth');
+  const classListElements = document.querySelectorAll('#classList li');
+  const rankResultElement = document.getElementById('rankResult');
+
+  // --- State and Constants ---
+  let displayDate = new Date();
+  const holidaysCache = {};
+  const baseDate = new Date('2025-09-04T00:00:00');
   const baseOrder = ['4반', '1반', '2반', '3반'];
-  const classes = ['1반', '2반', '3반', '4반'];
 
-  // 오늘 날짜와 기준 날짜의 차이(일)를 계산
-  const today = new Date();
-  // UTC 기준으로 날짜 차이를 계산하여 일광 절약 시간제 등의 영향을 받지 않도록 함
-  const diffTime = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - Date.UTC(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate());
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-  // 날짜 차이만큼 순서를 회전
-  let todaysOrder = [...baseOrder];
-  for (let i = 0; i < diffDays; i++) {
-    // 가장 마지막 순서를 맨 앞으로 가져옴
-    todaysOrder.unshift(todaysOrder.pop());
+  // --- Helper Functions ---
+  function toYYYYMMDD(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
-  // 각 반(li)에 클릭 이벤트 리스너 추가
-  const classElements = document.querySelectorAll('#classList li');
-  classElements.forEach(elem => {
+  // --- Core Logic ---
+
+  // Fetches and caches holidays for a given year
+  async function fetchHolidays(year) {
+    if (holidaysCache[year]) return holidaysCache[year];
+    try {
+      const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/KR`);
+      if (!response.ok) return [];
+      const holidays = await response.json();
+      const holidayDates = holidays.map(h => h.date);
+      holidaysCache[year] = holidayDates;
+      return holidayDates;
+    } catch (error) {
+      console.error("Error fetching holidays:", error);
+      return [];
+    }
+  }
+
+  // Checks if a date is a weekend (Saturday or Sunday)
+  function isWeekend(date) {
+    const day = date.getDay();
+    return day === 0 || day === 6;
+  }
+
+  // Calculates the number of working days between two dates
+  async function calculateWorkingDays(start, end) {
+    if (end < start) return 0;
+    let count = 0;
+    let currentDate = new Date(start);
+    const holidays = await fetchHolidays(end.getFullYear());
+    if (start.getFullYear() !== end.getFullYear()) {
+        const prevYearHolidays = await fetchHolidays(start.getFullYear());
+        holidays.push(...prevYearHolidays);
+    }
+
+    while (currentDate <= end) {
+      const dateString = toYYYYMMDD(currentDate);
+      if (!isWeekend(currentDate) && !holidays.includes(dateString)) {
+        count++;
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    return count;
+  }
+
+  // Gets the lunch order for a specific date
+  async function getOrderForDate(date) {
+    const workingDaysPassed = await calculateWorkingDays(baseDate, date);
+    const rotation = (workingDaysPassed > 0 ? workingDaysPassed - 1 : 0) % baseOrder.length;
+    
+    let newOrder = [...baseOrder];
+    for (let i = 0; i < rotation; i++) {
+        newOrder.unshift(newOrder.pop());
+    }
+    return newOrder;
+  }
+
+  // --- UI Rendering ---
+
+  // Renders the main calendar view
+  async function renderCalendar() {
+    const year = displayDate.getFullYear();
+    const month = displayDate.getMonth();
+    monthYearElement.textContent = `${year}년 ${month + 1}월`;
+    calendarElement.innerHTML = '';
+
+    const holidays = await fetchHolidays(year);
+    const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
+    daysOfWeek.forEach(day => {
+      const dayHeader = document.createElement('div');
+      dayHeader.className = 'grid-cell day-header';
+      dayHeader.textContent = day;
+      if (day === '일') dayHeader.classList.add('weekend');
+      calendarElement.appendChild(dayHeader);
+    });
+
+    const firstDayOfMonth = new Date(year, month, 1);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const startDayOfWeek = firstDayOfMonth.getDay();
+
+    for (let i = 0; i < startDayOfWeek; i++) {
+      calendarElement.appendChild(document.createElement('div'));
+    }
+
+    for (let i = 1; i <= daysInMonth; i++) {
+      const dayCell = document.createElement('div');
+      const dayDate = new Date(year, month, i);
+      const dateString = toYYYYMMDD(dayDate);
+
+      dayCell.className = 'grid-cell day-cell';
+      dayCell.innerHTML = `<span class="day-number">${i}</span>`;
+
+      if (isWeekend(dayDate)) dayCell.classList.add('weekend');
+      if (holidays.includes(dateString)) dayCell.classList.add('holiday');
+      if (toYYYYMMDD(dayDate) === toYYYYMMDD(new Date())) dayCell.classList.add('today');
+
+      if (!isWeekend(dayDate) && !holidays.includes(dateString) && dayDate >= baseDate) {
+        const order = await getOrderForDate(dayDate);
+        const firstPlaceTeam = order[0];
+        dayCell.innerHTML += `<span class="team-name">${firstPlaceTeam}</span>`;
+      }
+      calendarElement.appendChild(dayCell);
+    }
+  }
+
+  // Updates the rank display for the selected class
+  async function updateRankDisplay(selectedClass) {
+    const today = new Date();
+    const todaysOrder = await getOrderForDate(today);
+    const rank = todaysOrder.indexOf(selectedClass) + 1;
+    if (rank && todaysOrder.length > 0) {
+      rankResultElement.textContent = `${selectedClass}은 오늘 ${rank}번째 입니다.`;
+    } else {
+      rankResultElement.textContent = '오늘은 점심 순서가 없습니다.';
+    }
+  }
+
+  // --- Event Listeners ---
+  prevMonthButton.addEventListener('click', () => {
+    displayDate.setMonth(displayDate.getMonth() - 1);
+    renderCalendar();
+  });
+
+  nextMonthButton.addEventListener('click', () => {
+    displayDate.setMonth(displayDate.getMonth() + 1);
+    renderCalendar();
+  });
+
+  classListElements.forEach(elem => {
     elem.addEventListener('click', function() {
       const selectedClass = this.getAttribute('data-class');
-      const rank = todaysOrder.indexOf(selectedClass) + 1;
-      
-      const resultElement = document.getElementById('result');
-      if (rank) {
-        resultElement.textContent = `${selectedClass}은 오늘 ${rank}번째 입니다.`;
-      } else {
-        resultElement.textContent = `순서 정보를 찾을 수 없습니다.`;
-      }
+      updateRankDisplay(selectedClass);
     });
   });
+
+  // --- Initial Load ---
+  renderCalendar();
+  rankResultElement.textContent = '반을 선택하여 오늘 순위를 확인하세요.';
 });

@@ -1,25 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>점심 순서</title>
+  <title>점심 순서 캘린더</title>
   <meta charset="UTF-8">
   <style>
-    body { font-family: sans-serif; text-align: center; width: 200px; }
-    #classList { list-style: none; padding: 0; }
-    #classList li { background-color: #f0f0f0; margin: 5px; padding: 10px; border-radius: 5px; cursor: pointer; }
+    body { font-family: sans-serif; width: 300px; padding: 10px; }
+    #app-container { display: flex; flex-direction: column; gap: 20px; }
+    
+    /* Calendar Styles */
+    .calendar-container h4 { text-align: center; margin: 0 0 10px 0; }
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .calendar-header button { border: none; background: none; font-size: 1.5em; cursor: pointer; }
+    #monthYear { font-size: 1.2em; font-weight: bold; }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      text-align: center;
+    }
+    .grid-cell { padding: 5px 0; border-radius: 4px; }
+    .day-header { font-weight: bold; }
+    .day-cell { font-size: 0.8em; min-height: 30px; }
+    .day-cell .day-number { font-size: 1.1em; display: block; }
+    .day-cell .team-name { font-size: 0.9em; color: #333; }
+    .weekend { color: red; }
+    .holiday { background-color: #ffe0e0; }
+    .today { background-color: #d0eaff; }
+
+    /* Rank Checker Styles */
+    .rank-checker-container h4 { text-align: center; margin: 0 0 10px 0; }
+    #classList { display: flex; justify-content: space-around; list-style: none; padding: 0; }
+    #classList li { background-color: #f0f0f0; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
     #classList li:hover { background-color: #e0e0e0; }
-    #result { margin-top: 15px; font-size: 1.2em; font-weight: bold; min-height: 20px;}
+    #rankResult { text-align:center; margin-top: 15px; font-size: 1.2em; font-weight: bold; min-height: 20px;}
+
   </style>
 </head>
 <body>
-  <h3>오늘의 점심 순서 🍚</h3>
-  <ul id="classList">
-    <li data-class="1반">1반</li>
-    <li data-class="2반">2반</li>
-    <li data-class="3반">3반</li>
-    <li data-class="4반">4반</li>
-  </ul>
-  <div id="result"></div>
+  <div id="app-container">
+    <div class="calendar-container">
+      <h4>📅 월별 1등 보기</h4>
+      <div class="calendar-header">
+        <button id="prevMonth">&#9664;</button>
+        <span id="monthYear"></span>
+        <button id="nextMonth">&#9654;</button>
+      </div>
+      <div class="calendar-grid" id="calendar"></div>
+    </div>
+
+    <div class="rank-checker-container">
+      <h4>🔍 오늘 순위 보기</h4>
+      <ul id="classList">
+        <li data-class="1반">1반</li>
+        <li data-class="2반">2반</li>
+        <li data-class="3반">3반</li>
+        <li data-class="4반">4반</li>
+      </ul>
+      <div id="rankResult"></div>
+    </div>
+  </div>
 
   <script src="popup.js"></script>
 </body>
