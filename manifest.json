@@ -1,0 +1,10 @@
+{
+    "manifest_version": 3,
+    "name": "오늘 우리반은 몇번째로 밥을 먹는가",
+    "version": "1.0",
+    "description": "이 익스텐션은 이런 기능을 합니다.",
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": "icon.png"
+    }
+}
