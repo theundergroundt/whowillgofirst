@@ -1,11 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My Extension</title>
-  <script src="popup.js"></script>
+  <title>점심 순서</title>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; text-align: center; width: 200px; }
+    #classList { list-style: none; padding: 0; }
+    #classList li { background-color: #f0f0f0; margin: 5px; padding: 10px; border-radius: 5px; cursor: pointer; }
+    #classList li:hover { background-color: #e0e0e0; }
+    #result { margin-top: 15px; font-size: 1.2em; font-weight: bold; min-height: 20px;}
+  </style>
 </head>
 <body>
-  <h1>Hello, Extension!</h1>
-  <button id="myButton">Click me</button>
+  <h3>오늘의 점심 순서 🍚</h3>
+  <ul id="classList">
+    <li data-class="1반">1반</li>
+    <li data-class="2반">2반</li>
+    <li data-class="3반">3반</li>
+    <li data-class="4반">4반</li>
+  </ul>
+  <div id="result"></div>
+
+  <script src="popup.js"></script>
 </body>
 </html>
