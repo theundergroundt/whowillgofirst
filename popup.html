@@ -1,17 +1,46 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>점심 순서 캘린더</title>
   <meta charset="UTF-8">
   <style>
-    body { font-family: sans-serif; width: 300px; padding: 10px; }
-    #app-container { display: flex; flex-direction: column; gap: 15px; }
-    
+    body {
+      font-family: sans-serif;
+      width: 300px;
+      padding: 10px;
+      margin-bottom: 0px;
+    }
+
+    #main-title {
+      background-color: #4285F4;
+      /* Google Blue */
+      color: white;
+      text-align: center;
+      font-size: 1.1em;
+      font-weight: bold;
+      padding: 10px;
+      margin: -10px -10px 15px -10px;
+      /* Stretch to edges */
+      border-radius: 2px 2px 0 0;
+    }
+
+
+    #app-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
     /* Calendar & Rank Checker Titles */
-    .calendar-container h4, .rank-checker-container h4 {
-      text-align: center; 
-      margin: 0 0 10px 0; 
-      font-size: 1.15em; /* Title font size increased */
+    .calendar-container h4,
+    .rank-checker-container h4 {
+      text-align: center;
+      margin: 0 0 10px 0;
+      font-size: 1.15em;
+      line-height: 1.6;
+      padding-bottom: 4px;
+      /* Title font size increased */
     }
 
     .calendar-header {
@@ -20,49 +49,111 @@
       align-items: center;
       margin-bottom: 10px;
     }
-    .calendar-header button { border: none; background: none; font-size: 1.5em; cursor: pointer; }
-    #monthYear { font-size: 1.2em; font-weight: bold; }
+
+    .calendar-header button {
+      border: none;
+      background: none;
+      font-size: 1.5em;
+      cursor: pointer;
+    }
+
+    #monthYear {
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       gap: 2px;
       text-align: center;
     }
-    .grid-cell { padding: 5px 0; border-radius: 4px; }
-    .day-header { font-weight: bold; }
-    .day-cell { font-size: 0.8em; min-height: 30px; }
-    .day-cell .day-number { font-size: 1.1em; display: block; }
-    .day-cell .team-name { font-size: 0.9em; color: #1b5e20; font-weight: bold; }
-    .weekend { color: red; }
-    .holiday { background-color: #ffe0e0; }
-    .today { background-color: #d0eaff; }
+
+    .grid-cell {
+      padding: 5px 0;
+      border-radius: 4px;
+    }
+
+    .day-header {
+      font-weight: bold;
+    }
+
+    .day-cell {
+      font-size: 0.8em;
+      min-height: 30px;
+    }
+
+    .day-cell .day-number {
+      font-size: 1.1em;
+      display: block;
+    }
+
+    .day-cell .team-name {
+      font-size: 0.9em;
+      color: #1b5e20;
+      font-weight: bold;
+    }
+
+    .weekend {
+      color: red;
+    }
+
+    .holiday {
+      background-color: #ffe0e0;
+    }
+
+    .today {
+      background-color: #d0eaff;
+    }
+
+    .my-class-day {
+      border: 3px solid #1e88e5; /* Make border more prominent */
+      padding: 2px 0 !important; /* Adjust padding to fit border */
+    }
 
     /* Separator Style */
-    hr { border: 0; border-top: 1px solid #ccc; margin: 0; }
+    #classList {
+      display: flex;
+      justify-content: space-around;
+      list-style: none;
+      padding: 0;
+    }
 
-    /* Rank Checker Styles */
-    #classList { display: flex; justify-content: space-around; list-style: none; padding: 0; }
-    #classList li {
-      background-color: #e8f5e9; /* Green background */
-      padding: 8px 12px; 
-      border-radius: 5px; 
-      cursor: pointer; 
+    #classList li,
+    #myClassSelector li {
+      width: 40px; /* Set fixed width */
+      height: 40px; /* Set fixed height */
+      border-radius: 50%; /* Make it circular */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #e8f5e9;
+      /* Green background */
+      cursor: pointer;
       transition: background-color 0.2s;
     }
-    #classList li:hover { 
-      background-color: #c8e6c9; /* Darker green on hover */
-    }
-    #rankResult { 
-      text-align:center; 
-      margin-top: 15px; 
-      font-size: 1.4em; /* Result font size increased */
-      font-weight: bold; 
-      min-height: 20px;
+
+    #classList li:hover,
+    #myClassSelector li:hover {
+      background-color: #c8e6c9;
+      /* Darker green on hover */
     }
 
+    #rankResult {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 1.4em;
+      font-weight: bold;
+      /* height와 line-height 대신 padding을 사용합니다 */
+      padding: 10px 0;
+      line-height: 1.8;
+      /* 위아래로 10px, 좌우로는 0의 여백을 줍니다. 값을 조절해보세요. */
+    }
   </style>
 </head>
+
 <body>
+  <h1 id="main-title">부울경싸피 lunch sequence 14</h1>
   <div id="app-container">
     <div class="calendar-container">
       <h4>📅 월별 1등 보기</h4>
@@ -77,7 +168,7 @@
     <hr>
 
     <div class="rank-checker-container">
-      <h4>🔍 오늘 순위 보기</h4>
+      <h4>🔍 오늘 우리 반 순서는?</h4>
       <ul id="classList">
         <li data-class="1반">1반</li>
         <li data-class="2반">2반</li>
@@ -90,4 +181,5 @@
 
   <script src="popup.js"></script>
 </body>
+
 </html>

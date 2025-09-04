@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let newOrder = [...baseOrder];
     for (let i = 0; i < rotation; i++) {
-      newOrder.unshift(newOrder.pop());
+      newOrder.push(newOrder.shift());
     }
     return newOrder;
   }
@@ -134,20 +134,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (rank && todaysOrder.length > 0) {
       let emoji = '';
-      // 등수에 따라 다른 이모티콘을 설정합니다. 원하는 이모티콘으로 변경하세요.
       switch (rank) {
-        case 1:
-          emoji = '😋'; // 1등 이모티콘
-          break;
-        case 2:
-          emoji = '😚'; // 2등 이모티콘
-          break;
-        case 3:
-          emoji = '😭'; // 3등 이모티콘
-          break;
-        case 4:
-          emoji = '😵'; // 4등 이모티콘
-          break;
+        case 1: emoji = '😋'; break;
+        case 2: emoji = '😚'; break;
+        case 3: emoji = '😭'; break;
+        case 4: emoji = '😵'; break;
       }
       rankResultElement.textContent = `${emoji} ${selectedClass}은 오늘 ${rank}번째 입니다.`;
     } else {

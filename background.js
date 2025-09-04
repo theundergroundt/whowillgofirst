@@ -55,7 +55,7 @@ async function getOrderForDate(date) {
   const rotation = (workingDaysPassed > 0 ? workingDaysPassed - 1 : 0) % baseOrder.length;
   let newOrder = [...baseOrder];
   for (let i = 0; i < rotation; i++) {
-      newOrder.unshift(newOrder.pop());
+      newOrder.push(newOrder.shift());
   }
   return newOrder;
 }
