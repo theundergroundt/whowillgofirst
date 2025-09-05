@@ -4,11 +4,12 @@ document.addEventListener('DOMContentLoaded', function () {
   const calendarElement = document.getElementById('calendar');
   const prevMonthButton = document.getElementById('prevMonth');
   const nextMonthButton = document.getElementById('nextMonth');
-  const classListElements = document.querySelectorAll('#classList li');
+  const classSelector = document.getElementById('classSelector');
   const rankResultElement = document.getElementById('rankResult');
 
   // --- State and Constants ---
   let displayDate = new Date();
+  let myClass = null;
   const holidaysCache = {};
   const baseDate = new Date('2025-09-04T00:00:00');
   const baseOrder = ['2반', '3반', '4반', '1반'];
@@ -22,8 +23,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // --- Core Logic ---
-
-  // Fetches and caches holidays for a given year
   async function fetchHolidays(year) {
     if (holidaysCache[year]) return holidaysCache[year];
     try {
@@ -39,13 +38,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // Checks if a date is a weekend (Saturday or Sunday)
   function isWeekend(date) {
     const day = date.getDay();
     return day === 0 || day === 6;
   }
 
-  // Calculates the number of working days between two dates
   async function calculateWorkingDays(start, end) {
     if (end < start) return 0;
     let count = 0;
@@ -66,7 +63,6 @@ document.addEventListener('DOMContentLoaded', function () {
     return count;
   }
 
-  // Gets the lunch order for a specific date
   async function getOrderForDate(date) {
     const workingDaysPassed = await calculateWorkingDays(baseDate, date);
     const rotation = (workingDaysPassed > 0 ? workingDaysPassed - 1 : 0) % baseOrder.length;
@@ -79,8 +75,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // --- UI Rendering ---
-
-  // Renders the main calendar view
   async function renderCalendar() {
     const year = displayDate.getFullYear();
     const month = displayDate.getMonth();
@@ -93,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const dayHeader = document.createElement('div');
       dayHeader.className = 'grid-cell day-header';
       dayHeader.textContent = day;
-      if (day === '일') dayHeader.classList.add('weekend');
+      if (day === '일' || day === '토') dayHeader.classList.add('weekend');
       calendarElement.appendChild(dayHeader);
     });
 
@@ -121,18 +115,22 @@ document.addEventListener('DOMContentLoaded', function () {
         const order = await getOrderForDate(dayDate);
         const firstPlaceTeam = order[0];
         dayCell.innerHTML += `<span class="team-name">${firstPlaceTeam}</span>`;
+
+        // Highlight 'My Class' day
+        if (myClass && firstPlaceTeam === myClass) {
+          dayCell.classList.add('my-class-day');
+        }
       }
       calendarElement.appendChild(dayCell);
     }
   }
 
-  // Updates the rank display for the selected class
   async function updateRankDisplay(selectedClass) {
     const today = new Date();
     const todaysOrder = await getOrderForDate(today);
     const rank = todaysOrder.indexOf(selectedClass) + 1;
 
-    if (rank && todaysOrder.length > 0) {
+    if (rank > 0) {
       let emoji = '';
       switch (rank) {
         case 1: emoji = '😋'; break;
@@ -140,10 +138,20 @@ document.addEventListener('DOMContentLoaded', function () {
         case 3: emoji = '😭'; break;
         case 4: emoji = '😵'; break;
       }
-      rankResultElement.textContent = `${emoji} ${selectedClass}은 오늘 ${rank}번째 입니다.`;
+      rankResultElement.innerHTML = `${emoji} ${selectedClass}은 오늘 <strong>${rank}번째</strong> 입니다.`;
     } else {
       rankResultElement.textContent = '오늘은 점심 순서가 없습니다.';
     }
+  }
+
+  function updateSelectedClassUI(selectedClass) {
+    document.querySelectorAll('#classSelector li').forEach(li => {
+      if (li.dataset.class === selectedClass) {
+        li.classList.add('selected');
+      } else {
+        li.classList.remove('selected');
+      }
+    });
   }
 
   // --- Event Listeners ---
@@ -157,14 +165,34 @@ document.addEventListener('DOMContentLoaded', function () {
     renderCalendar();
   });
 
-  classListElements.forEach(elem => {
-    elem.addEventListener('click', function () {
-      const selectedClass = this.getAttribute('data-class');
-      updateRankDisplay(selectedClass);
-    });
+  classSelector.addEventListener('click', function (e) {
+    const target = e.target.closest('li');
+    if (target) {
+      const selectedClass = target.dataset.class;
+      myClass = selectedClass;
+
+      // Save to storage, update UI, and re-render calendar
+      chrome.storage.local.set({ myClass: selectedClass }, () => {
+        updateSelectedClassUI(selectedClass);
+        updateRankDisplay(selectedClass);
+        renderCalendar(); // Re-render to apply the border
+      });
+    }
   });
 
   // --- Initial Load ---
-  renderCalendar();
-  rankResultElement.textContent = '반을 선택하여 오늘 순위를 확인하세요.';
+  function initialize() {
+    chrome.storage.local.get('myClass', (data) => {
+      if (data.myClass) {
+        myClass = data.myClass;
+        updateSelectedClassUI(myClass);
+        updateRankDisplay(myClass);
+      } else {
+        rankResultElement.textContent = '반을 선택하여 오늘 순서를 확인하고 우리반을 설정하세요.';
+      }
+      renderCalendar();
+    });
+  }
+
+  initialize();
 });

@@ -107,47 +107,48 @@
     }
 
     .my-class-day {
-      border: 3px solid #1e88e5; /* Make border more prominent */
-      padding: 2px 0 !important; /* Adjust padding to fit border */
+      border: 2px dotted green;
     }
 
-    /* Separator Style */
-    #classList {
+    #classSelector {
       display: flex;
       justify-content: space-around;
       list-style: none;
       padding: 0;
+      margin-top: 10px;
     }
 
-    #classList li,
-    #myClassSelector li {
-      width: 40px; /* Set fixed width */
-      height: 40px; /* Set fixed height */
-      border-radius: 50%; /* Make it circular */
+    #classSelector li {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
       background-color: #e8f5e9;
-      /* Green background */
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: background-color 0.2s, box-shadow 0.2s;
+      font-weight: bold;
     }
 
-    #classList li:hover,
-    #myClassSelector li:hover {
+    #classSelector li:hover {
       background-color: #c8e6c9;
-      /* Darker green on hover */
+    }
+
+    #classSelector li.selected {
+      background-color: #4CAF50;
+      /* 진한 녹색 */
+      color: white;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
     }
 
     #rankResult {
       text-align: center;
       margin-top: 15px;
-      font-size: 1.4em;
+      font-size: 1.2em;
       font-weight: bold;
-      /* height와 line-height 대신 padding을 사용합니다 */
       padding: 10px 0;
-      line-height: 1.8;
-      /* 위아래로 10px, 좌우로는 0의 여백을 줍니다. 값을 조절해보세요. */
+      line-height: 1.5;
     }
   </style>
 </head>
@@ -168,8 +169,8 @@
     <hr>
 
     <div class="rank-checker-container">
-      <h4>🔍 오늘 우리 반 순서는?</h4>
-      <ul id="classList">
+      <h4>⭐ 우리반 설정 및 순서 확인</h4>
+      <ul id="classSelector" data-action="set-my-class">
         <li data-class="1반">1반</li>
         <li data-class="2반">2반</li>
         <li data-class="3반">3반</li>
